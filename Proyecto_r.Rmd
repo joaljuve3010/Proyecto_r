@@ -24,15 +24,9 @@ yearly
 ggplot(yearly,aes(x=year, y =proportion_deaths,group=clinic,color=clinic))+geom_line(size=1.5)
 
 ```
-## 4. Comienza el lavado de manos
-¿Por qué la proporción de muertes es mucho más alta en la Clínica 1? La única diferencia en
-ambas clínicas era que muchos estudiantes de medicina trabajaban en la Clínica 1, mientras
-que en la Clínica 2 no había tantos. Otro dato interesante es que los médicos que atendían
-partos solo se encargaban de esa función, mientras que los estudiantes también pasaban
-tiempo en las salas de autopsias examinando cadáveres.
-Se empezó a sospechar que algo en los cadáveres, propagado de las manos de los estudiantes
-de medicina, causaba la enfermedad. Entonces, en un intento desesperado por detener las
-altas tasas de mortalidad, se decretó: ¡Lávese las manos en todo momento!
+## 4. Comienza el lavado de manos ##
+
+¿Por qué la proporción de muertes es mucho más alta en la Clínica 1? La única diferencia en ambas clínicas era que muchos estudiantes de medicina trabajaban en la Clínica 1, mientras que en la Clínica 2 no había tantos. Otro dato interesante es que los médicos que atendían partos solo se encargaban de esa función, mientras que los estudiantes también pasaban tiempo en las salas de autopsias examinando cadáveres. Se empezó a sospechar que algo en los cadáveres, propagado de las manos de los estudiantes de medicina, causaba la enfermedad. Entonces, en un intento desesperado por detener las altas tasas de mortalidad, se decretó: ¡Lávese las manos en todo momento!
 
 
 ```{r}
@@ -83,12 +77,49 @@ monthly<- monthly %>%
   mutate(handwashing_started= if_else(.$year >= 1847, TRUE, FALSE))
 head(monthly)
 ```
-6.2. Haga una gráfica lineal de proportion_deaths por fecha para el data frame monthly usando ggplot. Haga que el color de la línea dependa de handwashing_started.
 ```{r}
+#  6.2. Haga una gráfica lineal de proportion_deaths por fecha para el data frame monthly usando ggplot. Haga que el color de la línea dependa de handwashing_started.
+#  6.3. Utilice la función labs para dar al eje x y al eje y una estética a las etiquetas.
+
 ggplot(monthly,aes(x=date, y =proportion_deaths, group=1, color=handwashing_started))+geom_line(size=1) +
  scale_x_date(date_breaks = "6 month ", date_labels = "%b/%Y")+
  guides(x = guide_axis(angle = 45))+
- labs(x = "Fechas",y= "Proporcion de muertes",colors  = "blue" )
+ labs(x = "Fechas",y= "Proporcion de muertes" )
+```
+## 7. ¿Más lavado de manos, menos muertes?
+Nuevamente, las estadísticas demuestran que lavarse las manos tuvo un efecto enorme.
+¿Cuánto redujo la proporción mensual de muertes en promedio?
+
+```{r}
+# 7.1. Utilice group_by y summarise para calcular el promedio de proportion_deaths antes y después de que se impusiera el lavado de manos.
+# 7.2. Asigne el resultado en la variable month_summary e imprímala.
+# 7.3. El data frame resultante debería verse como el siguiente: 
+month_summary <- monthly %>%
+  group_by(handwashing_started) %>%
+  summarise(proportion_deaths= mean(proportion_deaths)) %>%
+  arrange(desc(handwashing_started))
+month_summary
+```
+8. Análisis estadístico de los datos de lavado de manos
+```{r}
+
+# independientes
+t.test(proportion_deaths ~ handwashing_started, data=monthly)
+  
+```
+a un 95% de confianza el intervbalo esta entre 0.05290915 0.09747238
+Considerar que esta pruba se hizo como independiente, para un analisismas profundo se debe de tomar como dependiente ya que representa un antes y un despues de la implementacion de labado de manos
+```{r}
+before <- monthly %>%
+  filter(handwashing_started == FALSE)
+after <- monthly %>%
+  filter(handwashing_started == TRUE)
+
+after
+before_sample <- before[sample(nrow(before), 27), ]
+before_sample
+# test as paired data
+t.test(before_sample$proportion_deaths, after$proportion_deaths, paired=TRUE)
+
 ```
 
-6.3. Utilice la función labs para dar al eje x y al eje y una estética a las etiquetas.
